@@ -55,7 +55,7 @@ export default function Home() {
             <h1
               className={`mb-8 text-5xl tracking-wider text-white ${akronim.className}`}
             >
-              RÉPLICA
+              REPLICA
             </h1>
             <h5 className="mb-4 font-sans text-white/80">
               Convertissez les numéros de vos contacts
