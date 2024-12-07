@@ -24,7 +24,8 @@ const steps: Step[] = [
   },
   {
     title: "Étape 3",
-    description: "Téléchargez le fichier modifié depuis le site.",
+    description:
+      "Téléchargez le fichier modifié depuis le site. Nous vous recommandons de garder les versions originales et modifiées des numéros",
     image: "/steps/step3.jpg",
   },
   {
