@@ -3,7 +3,11 @@
 import { useState } from "react";
 import Carousel from "../components/Carousel";
 import { VCFData } from "../types/Contact";
-import { generateModifiedVCF, parseVCF } from "../utils/vcfUtils";
+import {
+  generateModifiedVCF,
+  parseVCF,
+  generateOnlyModifiedVCF,
+} from "../utils/vcfUtils";
 import { Akronim } from "next/font/google";
 
 const akronim = Akronim({
@@ -26,13 +30,19 @@ export default function Home() {
       return;
     }
 
-    const content = await file.text();
-    console.log("Contenu du fichier:", content);
-
-    const parsedData = parseVCF(content);
-    console.log("Données parsées:", parsedData);
-
-    setVcfData(parsedData);
+    try {
+      const content = await file.text();
+      const parsedData = parseVCF(content, file.name);
+      setVcfData(parsedData);
+    } catch (error) {
+      if (error instanceof Error) {
+        alert(error.message);
+      } else {
+        alert("Une erreur est survenue lors du traitement du fichier");
+      }
+      event.target.value = "";
+      return;
+    }
   };
 
   const handleDownload = () => {
@@ -44,7 +54,23 @@ export default function Home() {
 
     const a = document.createElement("a");
     a.href = url;
-    a.download = "contacts_modified.vcf";
+    a.download = "contacts_modified_rp.vcf";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleDownloadModifiedOnly = () => {
+    if (!vcfData) return;
+
+    const modifiedContent = generateOnlyModifiedVCF(vcfData);
+    const blob = new Blob([modifiedContent], { type: "text/vcard" });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "contacts_modified_only_rp.vcf";
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -80,12 +106,20 @@ export default function Home() {
                 </label>
               </div>
               {vcfData && (
-                <button
-                  onClick={handleDownload}
-                  className="px-4 py-2 font-bold text-white rounded backdrop-blur-md transition-all bg-white/20 hover:bg-white/30"
-                >
-                  Télécharger le fichier modifié
-                </button>
+                <div className="flex flex-col gap-4 justify-center sm:flex-row">
+                  <button
+                    onClick={handleDownload}
+                    className="px-4 py-2 font-bold text-white rounded backdrop-blur-md transition-all bg-white/20 hover:bg-white/30"
+                  >
+                    Télécharger avec numéros originaux et modifiés (recommandé)
+                  </button>
+                  <button
+                    onClick={handleDownloadModifiedOnly}
+                    className="px-4 py-2 font-bold text-white rounded backdrop-blur-md transition-all bg-white/20 hover:bg-white/30"
+                  >
+                    Télécharger avec uniquement les numéros modifiés
+                  </button>
+                </div>
               )}
 
               {vcfData ? (

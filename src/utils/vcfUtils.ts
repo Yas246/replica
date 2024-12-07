@@ -1,6 +1,12 @@
 import { Contact, VCFData } from "../types/Contact";
 
-export const parseVCF = (content: string): VCFData => {
+export const parseVCF = (content: string, filename: string): VCFData => {
+  if (isAlreadyModified(filename)) {
+    throw new Error(
+      "Ce fichier a déjà été modifié par Réplica. Veuillez utiliser le fichier VCF original."
+    );
+  }
+
   const contacts: Contact[] = [];
   const vcardBlocks = content
     .split("BEGIN:VCARD")
@@ -158,4 +164,59 @@ export const generateModifiedVCF = (vcfData: VCFData): string => {
   });
 
   return modifiedContent;
+};
+
+export const generateOnlyModifiedVCF = (vcfData: VCFData): string => {
+  let modifiedContent = "";
+  const vcardBlocks = vcfData.rawContent
+    .split("BEGIN:VCARD")
+    .filter((block) => block.trim())
+    .map((block) => "BEGIN:VCARD" + block);
+
+  vcardBlocks.forEach((block) => {
+    if (block.trim()) {
+      const lines = block.split("\n");
+      const modifiedLines: string[] = [];
+      let inVCard = false;
+
+      lines.forEach((line) => {
+        const trimmedLine = line.trim();
+
+        if (trimmedLine === "BEGIN:VCARD") {
+          inVCard = true;
+          modifiedLines.push(line);
+          return;
+        }
+
+        if (inVCard && trimmedLine.startsWith("TEL;")) {
+          const originalPhone = trimmedLine.split(":")[1];
+          const secondaryPhone = createSecondaryPhone(originalPhone);
+
+          if (secondaryPhone && secondaryPhone !== originalPhone) {
+            // Si le numéro peut être modifié, on ne garde que le numéro modifié
+            const telType = trimmedLine.split(":")[0];
+            modifiedLines.push(`${telType}:${secondaryPhone}`);
+          } else {
+            // Si le numéro ne peut pas être modifié, on garde le numéro original
+            modifiedLines.push(line);
+          }
+        } else {
+          // Pour toutes les autres lignes, les ajouter normalement
+          modifiedLines.push(line);
+        }
+
+        if (trimmedLine === "END:VCARD") {
+          inVCard = false;
+        }
+      });
+
+      modifiedContent += modifiedLines.join("\n") + "\n";
+    }
+  });
+
+  return modifiedContent;
+};
+
+export const isAlreadyModified = (filename: string): boolean => {
+  return filename.toLowerCase().includes("_rp.vcf");
 };
