@@ -20,6 +20,12 @@ export default function Home() {
     const file = event.target.files?.[0];
     if (!file) return;
 
+    if (!file.name.toLowerCase().endsWith(".vcf")) {
+      alert("Veuillez sélectionner un fichier .vcf valide");
+      event.target.value = "";
+      return;
+    }
+
     const content = await file.text();
     console.log("Contenu du fichier:", content);
 
@@ -67,7 +73,7 @@ export default function Home() {
                   Charger un fichier VCF
                   <input
                     type="file"
-                    accept=".vcf"
+                    accept=".vcf,text/vcard"
                     className="hidden"
                     onChange={handleFileUpload}
                   />

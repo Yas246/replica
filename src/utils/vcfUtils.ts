@@ -124,20 +124,28 @@ export const generateModifiedVCF = (vcfData: VCFData): string => {
         // Gestion du début et fin de vCard
         if (trimmedLine === "BEGIN:VCARD") {
           inVCard = true;
+          modifiedLines.push(line);
+          return;
         }
 
-        // Ajouter la ligne originale
-        modifiedLines.push(line);
-
-        // Si c'est une ligne de téléphone, ajouter le numéro secondaire
+        // Si c'est une ligne de téléphone, inverser l'ordre
         if (inVCard && trimmedLine.startsWith("TEL;")) {
           const originalPhone = trimmedLine.split(":")[1];
           const secondaryPhone = createSecondaryPhone(originalPhone);
+
           if (secondaryPhone && secondaryPhone !== originalPhone) {
-            // Copier le même type de téléphone (CELL, WORK, etc.) mais avec ;OTHER
+            // Ajouter d'abord le numéro secondaire
             const telType = trimmedLine.split(":")[0];
-            modifiedLines.push(`${telType};OTHER:${secondaryPhone}`);
+            modifiedLines.push(`${telType}:${secondaryPhone}`);
+            // Puis ajouter le numéro original avec ;OTHER
+            modifiedLines.push(`${telType};OTHER:${originalPhone}`);
+          } else {
+            // Si pas de numéro secondaire, ajouter juste l'original
+            modifiedLines.push(line);
           }
+        } else {
+          // Pour toutes les autres lignes, les ajouter normalement
+          modifiedLines.push(line);
         }
 
         if (trimmedLine === "END:VCARD") {

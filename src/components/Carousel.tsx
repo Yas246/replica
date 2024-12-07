@@ -44,6 +44,7 @@ export default function Carousel() {
   const [currentStep, setCurrentStep] = useState(0);
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
+  const [isPaused, setIsPaused] = useState(false);
 
   // Minimum de distance requise pour un swipe (en pixels)
   const minSwipeDistance = 50;
@@ -72,15 +73,21 @@ export default function Carousel() {
   };
 
   useEffect(() => {
+    if (isPaused) return;
+
     const timer = setInterval(() => {
       setCurrentStep((prev) => (prev + 1) % steps.length);
     }, 5000);
 
     return () => clearInterval(timer);
-  }, []);
+  }, [isPaused]);
 
   return (
-    <div className="overflow-hidden relative mx-auto w-full max-w-[1200px] backdrop-blur-md bg-white/20 rounded-lg shadow-lg border border-white/10">
+    <div
+      className="overflow-hidden relative mx-auto w-full max-w-[1200px] backdrop-blur-md bg-white/20 rounded-lg shadow-lg border border-white/10"
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+    >
       <div
         className="flex transition-transform duration-500 ease-in-out touch-pan-y"
         style={{ transform: `translateX(-${currentStep * 100}%)` }}
