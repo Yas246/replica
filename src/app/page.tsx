@@ -85,11 +85,11 @@ export default function Home() {
         <div className="mx-auto max-w-3xl">
           <div className="text-center">
             <h1
-              className={`mb-8 text-5xl tracking-wider text-white ${akronim.className}`}
+              className={`mb-6 text-5xl tracking-wider text-white ${akronim.className}`}
             >
               REPLICA
             </h1>
-            <h5 className="mb-4 font-sans text-white/80">
+            <h5 className="mb-5 font-sans text-white/80">
               Convertissez les numéros de vos contacts
             </h5>
 
@@ -100,6 +100,7 @@ export default function Home() {
                   <input
                     type="file"
                     accept=".vcf,text/vcard"
+                    x-webkit-capture="filesystem"
                     className="hidden"
                     onChange={handleFileUpload}
                   />
